@@ -71,6 +71,41 @@ php ./app.php
 php .\app.php
 ```
 
+### Run the CLI chat example
+
+This repo includes a tiny interactive CLI chat in [app.php](app.php) (backed by `DialClient\Application`).
+
+- Pass an optional `system_prompt` as the first argument.
+- Type `exit` to quit.
+
+**PowerShell**
+
+```powershell
+composer install
+. .\scripts\dial-env.ps1
+php .\app.php
+
+# With an explicit system prompt:
+php .\app.php "You are a helpful assistant."
+
+# Help:
+php .\app.php --help
+```
+
+**Bash / Git Bash**
+
+```bash
+composer install
+source ./scripts/dial-env.sh
+php ./app.php
+
+# With an explicit system prompt:
+php ./app.php "You are a helpful assistant."
+
+# Help:
+php ./app.php --help
+```
+
 ### SSL / cURL error 60 (Windows)
 
 If you see `cURL error 60: SSL certificate problem: unable to get local issuer certificate`, PHP/cURL can't validate the certificate chain.
