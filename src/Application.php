@@ -9,12 +9,16 @@ use DialClient\Exception\ConfigurationException;
 use DialClient\Http\GuzzleClient;
 use DialClient\Dial\DialChatCompletions;
 use GuzzleHttp\Exception\RequestException;
+use DialClient\Dial\Conversation;
+use DialClient\Dial\Message;
+use DialClient\Dial\Role;
 
 class Application
 {
     private Question $question;
     private string $systemPrompt;
     private DialChatCompletions $dial;
+    private Conversation $conversation;
 
     /**
      * @param array<int, string> $cliParams
@@ -26,8 +30,8 @@ class Application
         $systemPromptArg = $cliParams[1] ?? null;
 
         if ($systemPromptArg === '-h' || $systemPromptArg === '--help') {
-            fwrite(STDERR, "Usage: php ./app.php [system_prompt]\n");
-            fwrite(STDERR, "If omitted, you'll be prompted to enter it (or press Enter to use the default).\n");
+            echo "Usage: php ./app.php [system_prompt]\n";
+            echo "If omitted, you'll be prompted to enter it (or press Enter to use the default).\n";
             exit(0);
         }
 
@@ -69,36 +73,36 @@ class Application
             deploymentName: (string) $deploymentName,
             apiKeyHeaderValue: $apiKeyValue,
         );
+        $this->conversation = new Conversation();
     }
 
     public function run(bool $stream=false): void
     {
         try {
-            $messages = [
-                ['role' => 'system', 'content' => $this->systemPrompt],
-            ];
-            fwrite(STDOUT, "Type your question and press Enter. Type 'exit' to quit.\n\n");
+            $this->conversation->addMessage(new Message(Role::SYSTEM, $this->systemPrompt));
+            echo "Type your question and press Enter. Type 'exit' to quit.\n\n";
             while (true) {
                 $userQuestion = $this->question->ask('You');
                 if ($userQuestion === '') {
                     continue;
                 }
                 if (strtolower($userQuestion) === 'exit') {
+                    echo "Exiting the chat. Goodbye!\n";
                     break;
                 }
-                $messages[] = ['role' => 'user', 'content' => $userQuestion];
+                $this->conversation->addMessage(new Message(Role::USER, $userQuestion));
                 if ($stream) {
                     $result = $this->dial->stream([
                         'stream' => true,
-                        'messages' => $messages,
+                        'messages' => $this->conversation->getMessages(),
                     ]);
                 } else {
                     $result = $this->dial->create([
-                        'messages' => $messages,
+                        'messages' => $this->conversation->getMessages(),
                     ]);
                 }
-                $messages[] = ['role' => 'assistant', 'content' => $result->content];
-                fwrite(STDOUT, "Assistant: {$result->content}\n\n");
+                $this->conversation->addMessage(new Message(Role::AI, $result->content));
+                echo "Assistant: {$result->content}\n\n";
             }
         } catch (RequestException $e) {
             echo "HTTP request failed:" . $e->getMessage() . "\n";

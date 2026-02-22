@@ -8,7 +8,6 @@ use DialClient\Exception\ConsoleInputException;
 use function function_exists;
 use function readline;
 use function fgets;
-use function fwrite;
 use function trim;
 
 
@@ -32,7 +31,7 @@ final class Question
         if (function_exists('readline')) {
             $line = (string) readline($fullPrompt);
         } else {
-            fwrite(STDOUT, $fullPrompt);
+            echo $fullPrompt;
             $read = fgets(STDIN);
             if ($read === false) {
                 if ($default !== null) {
