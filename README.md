@@ -1,6 +1,6 @@
-## DialClient
+## PHP DialClient
 
-HTTP client library built on top of Guzzle with sync/async requests and stream support.
+DIAL AI Chat Completion Task implemented in PHP. A command line chat application that communicates with the DIAL AI API.
 
 API specification: https://dialx.ai/dial_api
 
